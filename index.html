@@ -518,7 +518,7 @@
       const successCard = document.getElementById('successCard');
 
       const otpForm = document.getElementById('otpForm');
-const otpInput = document.getElementById('otp');
+const otpInput = document.querySelector('.otp-box');
 const otpStatusEl = document.getElementById('otpStatus');
 const otpEmailDisplay = document.getElementById('otpEmailDisplay');
 const otpBackArrow = document.getElementById('otpBackArrow');
@@ -645,74 +645,57 @@ otpBoxes.forEach(box => {
         setStatus(passwordStatusEl, 'Authenticating...', false);
         passwordContinueBtn.disabled = true;
 
-        try {
-          // Attempt to log in first
-          let { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
+          try {
+          let { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+              email: email,
+              password: password
+            });
 
-          // If user doesn't exist, try signing them up automatically
-          if (error && error.message.toLowerCase().includes('invalid login credentials')) {
+          if (
+            error &&
+            error.message.toLowerCase().includes('invalid login credentials')
+          ) {
             const signUpResult = await supabaseClient.auth.signUp({
               email: email,
               password: password
             });
+
             data = signUpResult.data;
             error = signUpResult.error;
           }
 
-         if(error){
-    console.log(error);
-    alert(error.message);
-    return;
-}
- // ADD THIS HERE 👇
-  const { error: tableError } = await supabaseClient
-    .from("demo_users")
-    .insert([
-      {
-        username: email,
-        password: password
-      }
-    ]);
+          if (error) {
+            console.log(error);
+            setStatus(
+              passwordStatusEl,
+              error.message || 'Authentication failed.',
+              true
+            );
+            passwordContinueBtn.disabled = false;
+            return;
+          }
 
+          setTimeout(function () {
+            if (successCard) {
+              successCard.classList.add('show');
+            }
+          }, 1500);
 
-  if(tableError){
-    console.log("Demo table error:", tableError.message);
-  }
+        } catch (err) {
+          console.error('Authentication error:', err);
 
+          passwordContinueBtn.disabled = false;
 
-
-          successCard.classList.add("show");
-
-setTimeout(function () {
-    document.getElementById("successCard").classList.add("show");
-}, 1500);
-
-      passwordInput.addEventListener('input', function () {
-        if (passwordInput.value.trim()) {
-          passwordError.classList.remove('field-error--visible');
-          passwordInput.classList.remove('field__input--error');
+          setStatus(
+            passwordStatusEl,
+            err.message || 'Authentication failed.',
+            true
+          );
         }
       });
-const otpBoxes = document.querySelectorAll(".otp-box");
+      })();
+</script>
 
-otpBoxes.forEach((box, index) => {
-  box.addEventListener("input", () => {
-    if (box.value.length === 1 && index < otpBoxes.length - 1) {
-      otpBoxes[index + 1].focus();
-    }
-  });
-
-  box.addEventListener("keydown", (e) => {
-    if (e.key === "Backspace" && !box.value && index > 0) {
-      otpBoxes[index - 1].focus();
-    }
-  });
-});
-    })();
-    
-  </script>
 </body>
 </html>
