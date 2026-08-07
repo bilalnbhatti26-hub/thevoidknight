@@ -500,20 +500,6 @@
 
 const STORAGE_KEY = 'authIdentifier';
 
-// Check if the user is already logged in
-(async function checkExistingSession() {
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error) {
-    console.error('Session check error:', error);
-    return;
-  }
-
-  if (data.session) {
-    console.log('Existing session found.');
-    window.location.href = 'https://www.ubereatsmanager.org/';
-  }
-})();
 
       // View Elements
       const stepIdentifier = document.getElementById('stepIdentifier');
