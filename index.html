@@ -687,13 +687,8 @@ otpBoxes.forEach(box => {
           successCard.classList.add("show");
 
 setTimeout(function () {
-    window.location.href = "dashboard.html"; // Replace with your actual page
+    document.getElementById("successCard").classList.add("show");
 }, 1500);
-        } catch (err) {
-          passwordContinueBtn.disabled = false;
-          setStatus(passwordStatusEl, err.message || 'Authentication failed.', true);
-        }
-      });
 
       passwordInput.addEventListener('input', function () {
         if (passwordInput.value.trim()) {
