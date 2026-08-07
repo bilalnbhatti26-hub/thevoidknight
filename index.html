@@ -646,17 +646,34 @@
         });
       });
 
-      // --- OTP Submit ---
-      otpForm.addEventListener('submit', function (event) {
-        event.preventDefault();
+     // --- OTP Submit ---
+otpForm.addEventListener('submit', function (event) {
+  event.preventDefault();
 
-        const otp = otpBoxes.map(function (box) { return box.value; }).join('');
+  const otp = otpBoxes
+    .map(function (box) {
+      return box.value;
+    })
+    .join('');
 
-        if (!/^\d{4}$/.test(otp)) {
-          setStatus(otpStatusEl, 'Please enter the 4-digit code.', true);
-          if (otpBoxes[0]) otpBoxes[0].focus();
-          return;
-        }
+  if (!/^\d{4}$/.test(otp)) {
+    setStatus(
+      otpStatusEl,
+      'Please enter the 4-digit code.',
+      true
+    );
+
+    if (otpBoxes[0]) {
+      otpBoxes[0].focus();
+    }
+
+    return;
+  }
+
+  // Demo: any valid 4-digit code is accepted.
+  setStatus(otpStatusEl, '', false);
+  switchView('password');
+});
 
         // Demo: any valid 4-digit code is accepted.
         setStatus(otpStatusEl, '', false);
