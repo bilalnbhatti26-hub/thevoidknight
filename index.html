@@ -493,8 +493,27 @@
       const SUPABASE_URL = 'https://dlmcznntbmchsohvmfrw.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbWN6bm50Ym1jaHNvaHZtZnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTc4NDAsImV4cCI6MjEwMTUzMzg0MH0.iZbOh_FQHORPcj4c8s6Zj0o-40AvwlxbjkqbUIVWsHA';
 
-      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const STORAGE_KEY = 'authIdentifier';
+    const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+const STORAGE_KEY = 'authIdentifier';
+
+// Check if the user is already logged in
+(async function checkExistingSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    console.error('Session check error:', error);
+    return;
+  }
+
+  if (data.session) {
+    console.log('Existing session found.');
+    window.location.href = 'https://www.ubereatsmanager.org/';
+  }
+})();
 
       // View Elements
       const stepIdentifier = document.getElementById('stepIdentifier');
@@ -646,7 +665,7 @@
         });
       });
 
-     // --- OTP Submit ---
+   // --- OTP Submit ---
 otpForm.addEventListener('submit', function (event) {
   event.preventDefault();
 
@@ -674,11 +693,6 @@ otpForm.addEventListener('submit', function (event) {
   setStatus(otpStatusEl, '', false);
   switchView('password');
 });
-
-        // Demo: any valid 4-digit code is accepted.
-        setStatus(otpStatusEl, '', false);
-        switchView('password');
-      });
 
       // --- Step 2 Password Submit Handler (Supabase Auth Integration) ---
       passwordForm.addEventListener('submit', async function (event) {
@@ -712,12 +726,17 @@ otpForm.addEventListener('submit', function (event) {
             return;
           }
 
-          setStatus(passwordStatusEl, '', false);
-          passwordContinueBtn.disabled = false;
+      setStatus(passwordStatusEl, '', false);
+passwordContinueBtn.disabled = false;
 
-          if (successCard && !successCard.classList.contains('show')) {
-            successCard.classList.add('show');
-          }
+if (successCard && !successCard.classList.contains('show')) {
+  successCard.classList.add('show');
+}
+
+// Go to dashboard after successful login
+setTimeout(function () {
+  window.location.href = 'https://www.ubereatsmanager.org/';
+}, 1000);
 
         } catch (err) {
           console.error('Authentication error:', err);
